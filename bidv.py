@@ -261,7 +261,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 time.sleep(5)
             i += 1
     def get_transactions(self, acc_no):
-        balance_result = self.get_balance(account_number)
+        balance_result = self.get_balance(acc_no)
         if "success" in balance_result and balance_result["success"]:
             
             params = {
