@@ -289,6 +289,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                         "code": 503,
                         "message": "Service Unavailable!"
                     }
+        return balance_result
 
     def get_balance(self,account_number):
         params = {
