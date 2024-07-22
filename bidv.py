@@ -161,6 +161,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                     self.save_data()
                     check_confirm = self.check_confirm_loop()
                     if check_confirm["success"]:
+                        self.is_login = True
                         return {
                             'code': 200,
                             'success': True,
@@ -204,6 +205,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             self.access_token = res["accessToken"]
             self.client_id = res["clientId"]
             self.save_data()
+            self.is_login = True
 
             return {"code":200,"success": True, "message": res["des"], "data": res}
         else:
@@ -264,37 +266,42 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 time.sleep(5)
             i += 1
     def get_transactions(self, acc_no):
-        balance_result = self.get_balance(acc_no)
-        if "success" in balance_result and balance_result["success"]:
+        if not self.is_login:
+            login = self.do_login()
+            if not login['success']:
+                return login
             
-            params = {
-                "DT": self.DT,
-                "E": self.E,
-                "OV": self.OV,
-                "PM": self.PM,
-                "appVersion": self.app_version,
-                "clientId": self.client_id,
-                "accType": "D",
-                "accNo": acc_no,
-                "mid": 12,
-                "serviceTypeCode": "",
-                "transId": 0,
-            }
-            result = self.curl_post(self.url["process"], params, headers={"Authorization": self.auth_token})
-            if result['code'] == '00' and 'txnList' in result:
-                return {'code':200,'success': True, 'message': 'Thành công',
-                                'data':{
-                                    'transactions':result['txnList'],
-                        }}
-            else:
-                return  {
-                        "success": False,
-                        "code": 503,
-                        "message": "Service Unavailable!"
-                    }
-        return balance_result
+        params = {
+            "DT": self.DT,
+            "E": self.E,
+            "OV": self.OV,
+            "PM": self.PM,
+            "appVersion": self.app_version,
+            "clientId": self.client_id,
+            "accType": "D",
+            "accNo": acc_no,
+            "mid": 12,
+            "serviceTypeCode": "",
+            "transId": 0,
+        }
+        result = self.curl_post(self.url["process"], params, headers={"Authorization": self.auth_token})
+        if result['code'] == '00' and 'txnList' in result:
+            return {'code':200,'success': True, 'message': 'Thành công',
+                            'data':{
+                                'transactions':result['txnList'],
+                    }}
+        else:
+            return  {
+                    "success": False,
+                    "code": 503,
+                    "message": "Service Unavailable!"
+                }
 
     def get_balance(self,account_number):
+        if not self.is_login:
+            login = self.do_login()
+            if not login['success']:
+                return login
         params = {
             "DT": self.DT,
             "E": self.E,
