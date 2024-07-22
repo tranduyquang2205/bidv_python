@@ -67,6 +67,9 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             self.save_data()
         else:
             self.parse_data()
+            self.username = username
+            self.password = password
+            self.account_number = account_number
 
     def file_exists(self):
         try:
@@ -142,13 +145,13 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 }
             else:
                 if "loginType" in result and result["loginType"] == '3':
-                    print('Vui lòng nhập mã xác thực từ điện thoại')
+                    print('Vui lòng nhập OTP')
                     self.token = result["token"]
                     self.save_data()
                     return {
                         'code': 302,
                         'success': True,
-                        'message': 'Vui lòng nhập mã xác thực từ điện thoại',
+                        'message': 'Vui lòng nhập OTP',
                         'data': result if result else "",
 
                     }
@@ -384,7 +387,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
     #     return {"d": base64.b64encode(encrypted_data).decode("utf-8"), "k": encrypted_key}
     
     def encrypt_data(self, data):
-        url = "https://encrypt.pay2world.org/api.php?act=encrypt"
+        url = "https://encrypt1.pay2world.vip/api.php?act=encrypt"
 
         payload = json.dumps(data)
         headers = {
@@ -406,7 +409,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         return json.loads(decrypted_data)
     
     def decrypt_data(self, cipher):
-        url = "https://encrypt.pay2world.org/api.php?act=decrypt"
+        url = "https://encrypt1.pay2world.vip/api.php?act=decrypt"
 
         payload = json.dumps(cipher)
         headers = {
@@ -452,47 +455,47 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         return random.choice(user_agent_array)
 
 
-# username = "0868124631"
-# password = "Cuong7788@"
-# account_number = "8851516111"
-# bidv = BIDV(username, password, account_number)
-# balance_result = bidv.get_balance(account_number)
-# if "success" in balance_result and balance_result["success"]:
-#         print(balance_result)
-#         transactions_result = bidv.get_transactions(account_number)
-#         print(transactions_result)
-# else:
-#     login_result = bidv.do_login()
-#     print(login_result)
-#     if "success" in login_result and login_result['success']:
-#         if login_result['message'] == 'Vui lòng nhập OTP':
-#             otp = input("Enter OTP: ")
-#             verify_otp_result = bidv.verify_otp(otp)
-#             if verify_otp_result["success"]:
-#                 print("OTP verification successful")
-#                 balance_result = bidv.get_balance(account_number)
-#                 print(balance_result)
-#             else:
-#                 print(f"OTP verification failed: {verify_otp_result['des']}")
-#         elif login_result['message'] == 'Vui lòng xác thực đăng nhập trên điện thoại':
-#             otp = print("Vui lòng xác thực đăng nhập trên điện thoại...")
-#             check_confirm = bidv.check_confirm_loop()
-#             # check_confirm = bidv.check_confirm_loop()
-#             # print(check_confirm)
-#             if check_confirm["success"]:
-#                 print("Confirm login successfully")
-#                 balance_result = bidv.get_balance(account_number)
-#                 print(balance_result)
-#                 transactions_result = bidv.get_transactions(account_number)
-#                 print(transactions_result)
-#             else:
-#                 print(f"Confirm login failed: {check_confirm['des']}")
-#         else:
-#             balance_result = bidv.get_balance(account_number)
-#             print(balance_result)
-#             transactions_result = bidv.get_transactions(account_number)
-#             print(transactions_result)
+username = "0886438795"
+password = "Dqxkv2205.,"
+account_number = "3680617987"
+bidv = BIDV(username, password, account_number)
+balance_result = bidv.get_balance(account_number)
+if "success" in balance_result and balance_result["success"]:
+        print(balance_result)
+        transactions_result = bidv.get_transactions(account_number)
+        print(transactions_result)
+else:
+    login_result = bidv.do_login()
+    print(login_result)
+    if "success" in login_result and login_result['success']:
+        if login_result['message'] == 'Vui lòng nhập OTP':
+            otp = input("Enter OTP: ")
+            verify_otp_result = bidv.verify_otp(otp)
+            if verify_otp_result["success"]:
+                print("OTP verification successful")
+                balance_result = bidv.get_balance(account_number)
+                print(balance_result)
+            else:
+                print(f"OTP verification failed: {verify_otp_result['des']}")
+        elif login_result['message'] == 'Vui lòng xác thực đăng nhập trên điện thoại':
+            otp = print("Vui lòng xác thực đăng nhập trên điện thoại...")
+            check_confirm = bidv.check_confirm_loop()
+            # check_confirm = bidv.check_confirm_loop()
+            # print(check_confirm)
+            if check_confirm["success"]:
+                print("Confirm login successfully")
+                balance_result = bidv.get_balance(account_number)
+                print(balance_result)
+                transactions_result = bidv.get_transactions(account_number)
+                print(transactions_result)
+            else:
+                print(f"Confirm login failed: {check_confirm['des']}")
+        else:
+            balance_result = bidv.get_balance(account_number)
+            print(balance_result)
+            transactions_result = bidv.get_transactions(account_number)
+            print(transactions_result)
             
-#     else:
-#         print(f"Login failed: {login_result['message']}")
+    else:
+        print(f"Login failed: {login_result['message']}")
 
