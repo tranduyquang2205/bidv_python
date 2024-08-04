@@ -129,6 +129,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             "user": self.username,
         }
         result = self.curl_post(self.url["auth"], params)
+        print(result)
         if result["code"] == '00':
             if "accessToken" in result:
                 data = result
@@ -265,7 +266,49 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             else:
                 time.sleep(5)
             i += 1
-    def get_transactions(self, acc_no):
+    def get_transactions_by_page(self, page,limit,postingOrder,postingDate,nextRunBal,account_number):
+        params = {
+            "DT": self.DT,
+            "E": self.E,
+            "OV": self.OV,
+            "PM": self.PM,
+            "appVersion": self.app_version,
+            "clientId": self.client_id,
+            "accType": "D",
+            "accNo": account_number,
+            "mid": 12,
+            "serviceTypeCode": "",
+            "transId": 0,
+            "fileIndicator": "",
+            "isCache": False,
+            "maxRequestInCache": False,
+            "moreRecord": "Y",
+            "nextRunbal": nextRunBal,
+            "postingDate": postingDate,
+            "postingOrder": postingOrder
+        }
+        response = self.curl_post(self.url["process"], params, headers={"Authorization": self.auth_token})
+        print(response)
+
+        if response['code'] == '00' and 'txnList' in response:
+            transaction_history = response['txnList']
+
+        if len(transaction_history) < 10:
+            if transaction_history:
+                self.transactions += transaction_history
+        elif page*10 < limit:
+            if transaction_history:
+                self.transactions += transaction_history
+            page=page+1
+            nextRunBal = transaction_history[-1]['runbal']
+            postingOrder = transaction_history[-1]['postingOrder']
+            postingDate = transaction_history[-1]['postingDate']
+            return self.get_transactions_by_page(page,limit,postingOrder,postingDate,nextRunBal,account_number)
+        else:
+            if transaction_history:
+                self.transactions += transaction_history[:limit - (page-1)*10]
+        return True
+    def get_transactions(self, account_number, limit = 10):
         if not self.is_login:
             login = self.do_login()
             if not login['success']:
@@ -279,13 +322,21 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             "appVersion": self.app_version,
             "clientId": self.client_id,
             "accType": "D",
-            "accNo": acc_no,
+            "accNo": account_number,
             "mid": 12,
             "serviceTypeCode": "",
             "transId": 0,
         }
         result = self.curl_post(self.url["process"], params, headers={"Authorization": self.auth_token})
+
         if result['code'] == '00' and 'txnList' in result:
+            self.transactions = result['txnList']
+            nextRunBal = result['txnList'][-1]['runbal']
+            postingOrder = result['txnList'][-1]['postingOrder']
+            postingDate = result['txnList'][-1]['postingDate']
+            
+            if limit > 10:
+                self.get_transactions_by_page(2,limit,postingOrder,postingDate,nextRunBal,account_number)
             return {'code':200,'success': True, 'message': 'Thành công',
                             'data':{
                                 'transactions':result['txnList'],

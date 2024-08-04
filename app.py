@@ -60,12 +60,13 @@ class Transactions(BaseModel):
     username: str
     password: str
     account_number: str
+    limit: int
     
 @app.post('/get_transactions', tags=["get_transactions"])
 def get_transactions_api(input: Transactions):
     try:
         bidv = BIDV(input.username, input.password, input.account_number)
-        transaction = bidv.get_transactions(input.account_number)
+        transaction = bidv.get_transactions(input.account_number,input.limit)
         return APIResponse.json_format(transaction)
     except Exception as e:
         response = str(e)
