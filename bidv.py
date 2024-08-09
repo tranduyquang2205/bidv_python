@@ -392,15 +392,26 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         result = base64.b64encode(response.content).decode("utf-8")
         return result
     def createTaskCaptcha(self, base64_img):
-        url = 'http://103.72.96.214:8277/api/captcha/bidv'
+        url_1 = 'https://captcha.pay2world.vip//bidv'
+        url_2 = 'https://captcha1.pay2world.vip//bidv'
+        url_3 = 'https://captcha2.pay2world.vip//bidv'
+        
         payload = json.dumps({
-        "base64": base64_img
+        "image_base64": base64_img
         })
         headers = {
         'Content-Type': 'application/json'
         }
-        response = requests.post(url, headers=headers, data=payload)
-        return response.text
+        
+        for _url in [url_1, url_2, url_3]:
+            try:
+                response = requests.request("POST", _url, headers=headers, data=payload, timeout=10)
+                if response.status_code in [404, 502]:
+                    continue
+                return json.loads(response.text)
+            except:
+                continue
+        return {}
 
 
     def checkProgressCaptcha(self, task_id):
@@ -422,13 +433,12 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             return response_json["solution"]["text"]
     def solve_captcha(self):
         get_captcha = self.get_captcha()
-        task = self.createTaskCaptcha(get_captcha)
-        captchaText =json.loads(task)['captcha']
-        if not captchaText:
-            return {"success": False, "msg": "Solve Captcha failed"}
+        result = self.createTaskCaptcha(get_captcha)
+        if 'prediction' in result and result['prediction']:
+            captcha_value = result['prediction']
+            return {"status": True, "key": self.captcha_token, "captcha": captcha_value}
         else:
-            self.captcha_value = captchaText
-            return {"success": True, "key": self.captcha_token, "captcha": self.captcha_value}
+            return {"status": False, "msg": "Error solve captcha", "data": result}
 
     # def encrypt_data_2(self, data):
     #     data["clientPubKey"] = self.client_public_key
