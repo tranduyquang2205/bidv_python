@@ -112,9 +112,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
 
     def do_login(self):
         solve_captcha = self.solve_captcha()
-        if not solve_captcha["success"]:
+        if 'success' not in solve_captcha or not solve_captcha["success"]:
             return solve_captcha
-
         params = {
             "DT": self.DT,
             "E": self.E,
@@ -392,9 +391,10 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         result = base64.b64encode(response.content).decode("utf-8")
         return result
     def createTaskCaptcha(self, base64_img):
-        url_1 = 'https://captcha.pay2world.vip//bidv'
-        url_2 = 'https://captcha1.pay2world.vip//bidv'
-        url_3 = 'https://captcha2.pay2world.vip//bidv'
+        url_0 = 'http://103.72.96.214:8277/api/captcha/bidv'
+        url_1 = 'https://captcha.pay2world.vip/bidv'
+        url_2 = 'https://captcha1.pay2world.vip/bidv'
+        url_3 = 'https://captcha2.pay2world.vip/bidv'
         
         payload = json.dumps({
         "image_base64": base64_img
@@ -403,7 +403,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         'Content-Type': 'application/json'
         }
         
-        for _url in [url_1, url_2, url_3]:
+        for _url in [url_0 ,url_1, url_2, url_3]:
             try:
                 response = requests.request("POST", _url, headers=headers, data=payload, timeout=10)
                 if response.status_code in [404, 502]:
@@ -435,10 +435,10 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         get_captcha = self.get_captcha()
         result = self.createTaskCaptcha(get_captcha)
         if 'prediction' in result and result['prediction']:
-            captcha_value = result['prediction']
-            return {"status": True, "key": self.captcha_token, "captcha": captcha_value}
+            self.captcha_value = result['prediction']
+            return {"success": True, "key": self.captcha_token, "captcha": self.captcha_value}
         else:
-            return {"status": False, "msg": "Error solve captcha", "data": result}
+            return {"success": False, "msg": "Error solve captcha", "data": result}
 
     # def encrypt_data_2(self, data):
     #     data["clientPubKey"] = self.client_public_key
