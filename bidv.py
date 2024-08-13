@@ -9,11 +9,10 @@ import string
 from Cryptodome.Util import Counter
 import time
 from bypass_ssl_v3 import get_legacy_session
-requests = get_legacy_session()
+session_requests = get_legacy_session()
 class BIDV:
     def __init__(self, username, password, account_number):
         self.file = f"data/{username}.txt"
-        self.captcha_key = '9bf19cdde5b4a2823228da8203e11950'
         self.default_public_key = "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy6bC9ub46VDwZL5rwtbW\r\n2vBlHsqGzn6kr8OX7dKn+jHZxJxHSOGwTlqi+/QsSZ8wbUDkyK66atYB4Y06j1HS\r\nRimLG2zKK6BwqtMwM1VBwepy6nB+JsbobmvDInU/8cArdQRVNwWMHWwV0ZB0a3wp\r\nFCvVSwF61zFh5aG1Gbfvkbwdh4bpRa860MTyK19+rRXboROQmQYXfLWbrsI7vc3Q\r\nFRfgHIdh3baVd0mjmgMhE9yXwzroOxd418aWUQ9eSY1xmEmX9QynG9dYBMl/zzuS\r\nmM6CfJwKdsswKF0vmhRSLOBv+j/jABADcnrcIhcBS3EnTtSXDQPn/O/osqvRu5q\r\nxvQIDAQAB\r\n-----END PUBLIC KEY-----"
         self.key_anticaptcha = "f3a44e66302c61ffec07c80f4732baf3"
         self.client_public_key = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLDAD6Wr+W7SXLJMECvt3/W9zMmVcbzwUniO7vYLBJDOEcWJoci5TrfAXlA+z3vxLmEKif41f6wlDBiY+Njj0fNkVH9w+dBbIz2CBaB8RsoDSFYA5zzUbdXfVMV+fs3o3nK/dDAZNX1MU96cISsgQTe+dIIkpMs3jSFvrxjtGg+wIDAQAB"
@@ -58,6 +57,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         self.access_token = ""
         self.auth_token = ""
         self.is_login = False
+        self.time_login = time.time()
+        
 
         if not self.file_exists():
             self.username = username
@@ -91,6 +92,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             "access_token": self.access_token,
             "E": self.E,
             "auth_token": self.auth_token,
+            'time_login': self.time_login,
+            'is_login': self.is_login,
         }
         with open(self.file, "w") as file:
             json.dump(data, file)
@@ -109,7 +112,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             self.auth_token = data["auth_token"]
             self.cif = data["cif"]
             self.E = data["E"]
-
+            self.time_login = data.get("time_login", "")
+            self.is_login = data.get("is_login", "")
     def do_login(self):
         solve_captcha = self.solve_captcha()
         if 'success' not in solve_captcha or not solve_captcha["success"]:
@@ -134,6 +138,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 data = result
                 self.session_id = data["sessionId"]
                 self.access_token = data["accessToken"]
+                self.is_login = True
+                self.time_login = time.time()
                 self.save_data()
                 if "loginType" in result and result["loginType"] == '1':
                     self.save_data()
@@ -147,6 +153,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 if "loginType" in result and result["loginType"] == '3':
                     print('Vui lòng nhập OTP')
                     self.token = result["token"]
+                    self.is_login = True
+                    self.time_login = time.time()
                     self.save_data()
                     return {
                         'code': 302,
@@ -158,6 +166,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 elif "loginType" in result and result["loginType"] == '8':
                     print('Vui lòng xác thực từ điện thoại')
                     self.token = result["token"]
+                    self.is_login = True
+                    self.time_login = time.time()
                     self.save_data()
                     check_confirm = self.check_confirm_loop()
                     if check_confirm["success"]:
@@ -204,8 +214,9 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             self.cif = res["cif"]
             self.access_token = res["accessToken"]
             self.client_id = res["clientId"]
-            self.save_data()
             self.is_login = True
+            self.time_login = time.time()
+            self.save_data()
 
             return {"code":200,"success": True, "message": res["des"], "data": res}
         else:
@@ -260,6 +271,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 self.cif = check_confirm["cif"]
                 self.access_token = check_confirm["accessToken"]
                 self.client_id = check_confirm["clientId"]
+                self.is_login = True
+                self.time_login = time.time()
                 self.save_data()
                 return {"code":200,"success": True, "message": check_confirm["des"], "data": check_confirm}       
             else:
@@ -308,7 +321,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 self.transactions += transaction_history[:limit - (page-1)*10]
         return True
     def get_transactions(self, account_number, limit = 10):
-        if not self.is_login:
+        if not self.is_login or time.time() - self.time_login > 290:
             login = self.do_login()
             if not login['success']:
                 return login
@@ -348,9 +361,9 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 }
 
     def get_balance(self,account_number):
-        if not self.is_login:
+        if not self.is_login or time.time() - self.time_login > 290:
             login = self.do_login()
-            if not login['success']:
+            if 'success' not in login or not login['success']:
                 return login
         params = {
             "DT": self.DT,
@@ -387,7 +400,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
 
     def get_captcha(self):
         self.captcha_token = "".join(random.choices(string.ascii_letters + string.digits, k=30))
-        response = requests.get(self.url["getCaptcha"] + self.captcha_token, headers={"user-agent": self.get_user_agent()})
+        response = session_requests.get(self.url["getCaptcha"] + self.captcha_token, headers={"user-agent": self.get_user_agent()})
         result = base64.b64encode(response.content).decode("utf-8")
         return result
     def createTaskCaptcha(self, base64_img):
@@ -405,7 +418,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         
         for _url in [url_0 ,url_1, url_2, url_3]:
             try:
-                response = requests.request("POST", _url, headers=headers, data=payload, timeout=10)
+                response = session_requests.request("POST", _url, headers=headers, data=payload, timeout=10)
                 if response.status_code in [404, 502]:
                     continue
                 return json.loads(response.text)
@@ -424,7 +437,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         }
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response = session_requests.post(url, headers=headers, data=json.dumps(data))
         response_json = json.loads(response.text)
         if response_json["success"] != "ready":
             time.sleep(1)
@@ -461,7 +474,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         headers = {
         'Content-Type': 'application/json',
         }
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = session_requests.request("POST", url, headers=headers, data=payload)
 
         return json.loads(response.text)
 
@@ -483,7 +496,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         headers = {
         'Content-Type': 'application/json',
         }
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = session_requests.request("POST", url, headers=headers, data=payload)
 
         return json.loads(response.text)
 
@@ -491,7 +504,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         try:
             headers = self.header_null(headers)
             encrypted_data = self.encrypt_data(data)
-            response = requests.post(url, headers=headers, data=json.dumps(encrypted_data), timeout=self.timeout)
+            response = session_requests.post(url, headers=headers, data=json.dumps(encrypted_data), timeout=self.timeout)
             result = response.json()
             self.auth_token = response.headers.get("Authorization")
             return self.decrypt_data(result)
