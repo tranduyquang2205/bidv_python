@@ -183,8 +183,9 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                         return check_confirm
         else:
             return {
+                'code': 500,
                 "success": False,
-                "message": result["des"],
+                "message": result["des"] if 'des' in result else '',
                 "data": result if result else "",
             }
 
