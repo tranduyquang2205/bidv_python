@@ -354,6 +354,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                                 'transactions':result['txnList'],
                     }}
         else:
+            self.is_login = False
+            self.save_data()
             return  {
                     "success": False,
                     "code": 503,
@@ -396,6 +398,8 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                         }}
             return {'code':404,'success': False, 'message': 'account_number not found!'} 
         else:
+            self.is_login = False
+            self.save_data()
             return {'code':401 ,'success': False, 'message': 'Please relogin!'}
 
     def get_captcha(self):
@@ -509,11 +513,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             self.auth_token = response.headers.get("Authorization")
             return self.decrypt_data(result)
         except requests.exceptions.RequestException as e:
-            if e.response.status_code == 403:
-                return {"code":401,"success": False, "msg": "Token hết hạn vui lòng đăng nhập lại"}
-
-            response = e.response.content.decode("utf-8")
-            return self.decrypt_data(json.loads(response))
+            return {"code":401,"success": False, "msg": "Token hết hạn vui lòng đăng nhập lại"}
 
     def header_null(self, headers=None):
         default_headers = {
