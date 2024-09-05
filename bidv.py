@@ -11,7 +11,17 @@ import time
 from bypass_ssl_v3 import get_legacy_session
 session_requests = get_legacy_session()
 class BIDV:
-    def __init__(self, username, password, account_number):
+    def __init__(self, username, password, account_number,proxy_list=None):
+        self.proxy_list = proxy_list
+        if self.proxy_list:
+            self.proxy_info = self.proxy_list.pop(0)
+            proxy_host, proxy_port, username_proxy, password_proxy = self.proxy_info.split(':')
+            self.proxies = {
+                'http': f'http://{username_proxy}:{password_proxy}@{proxy_host}:{proxy_port}',
+                'https': f'https://{username_proxy}:{password_proxy}@{proxy_host}:{proxy_port}'
+            }
+        else:
+            self.proxies = None
         self.file = f"data/{username}.txt"
         self.default_public_key = "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy6bC9ub46VDwZL5rwtbW\r\n2vBlHsqGzn6kr8OX7dKn+jHZxJxHSOGwTlqi+/QsSZ8wbUDkyK66atYB4Y06j1HS\r\nRimLG2zKK6BwqtMwM1VBwepy6nB+JsbobmvDInU/8cArdQRVNwWMHWwV0ZB0a3wp\r\nFCvVSwF61zFh5aG1Gbfvkbwdh4bpRa860MTyK19+rRXboROQmQYXfLWbrsI7vc3Q\r\nFRfgHIdh3baVd0mjmgMhE9yXwzroOxd418aWUQ9eSY1xmEmX9QynG9dYBMl/zzuS\r\nmM6CfJwKdsswKF0vmhRSLOBv+j/jABADcnrcIhcBS3EnTtSXDQPn/O/osqvRu5q\r\nxvQIDAQAB\r\n-----END PUBLIC KEY-----"
         self.key_anticaptcha = "f3a44e66302c61ffec07c80f4732baf3"
@@ -406,7 +416,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
 
     def get_captcha(self):
         self.captcha_token = "".join(random.choices(string.ascii_letters + string.digits, k=30))
-        response = session_requests.get(self.url["getCaptcha"] + self.captcha_token, headers={"user-agent": self.get_user_agent()})
+        response = session_requests.get(self.url["getCaptcha"] + self.captcha_token, headers={"user-agent": self.get_user_agent()},proxies=self.proxies)
         result = base64.b64encode(response.content).decode("utf-8")
         return result
     def createTaskCaptcha(self, base64_img):
@@ -432,24 +442,6 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 continue
         return {}
 
-
-    def checkProgressCaptcha(self, task_id):
-        url = 'https://api.anti-captcha.com/getTaskResult'
-        data = {
-            "clientKey": self.key_anticaptcha,
-            "taskId": task_id
-        }
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-        response = session_requests.post(url, headers=headers, data=json.dumps(data))
-        response_json = json.loads(response.text)
-        if response_json["success"] != "ready":
-            time.sleep(1)
-            return self.checkProgressCaptcha(task_id)
-        else:
-            return response_json["solution"]["text"]
     def solve_captcha(self):
         get_captcha = self.get_captcha()
         result = self.createTaskCaptcha(get_captcha)
@@ -510,7 +502,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         try:
             headers = self.header_null(headers)
             encrypted_data = self.encrypt_data(data)
-            response = session_requests.post(url, headers=headers, data=json.dumps(encrypted_data), timeout=self.timeout)
+            response = session_requests.post(url, headers=headers, data=json.dumps(encrypted_data), timeout=self.timeout,proxies=self.proxies)
             result = response.json()
             self.auth_token = response.headers.get("Authorization")
             return self.decrypt_data(result)
