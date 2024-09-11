@@ -31,7 +31,7 @@ class BIDV:
                     'https': f'http://{quote(username_proxy)}:{quote(password_proxy)}@{proxy_host}:{proxy_port}'
                 }
             except ValueError:
-                self.proxies = None
+                self.proxies = None 
             except Exception as e:
                 self.proxies = None
         else:
@@ -517,7 +517,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
             self.auth_token = response.headers.get("Authorization")
             return self.decrypt_data(result)
         except requests.exceptions.RequestException as e:
-            return {"code":401,"success": False, "msg": "Token hết hạn vui lòng đăng nhập lại"}
+            return {"code":401,"success": False, "msg": "Token hết hạn vui lòng đăng nhập lại","data":e}
 
     def header_null(self, headers=None):
         default_headers = {
