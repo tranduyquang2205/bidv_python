@@ -346,7 +346,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 self.transactions += transaction_history[:limit - (page-1)*10]
         return True
     def get_transactions(self, account_number, limit = 10):
-        if not self.is_login or time.time() - self.time_login > 290:
+        if not self.is_login:
             login = self.do_login()
             if not login['success']:
                 return login
@@ -389,7 +389,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
                 }
 
     def get_balance(self,account_number):
-        if not self.is_login or time.time() - self.time_login > 290:
+        if not self.is_login:
             login = self.do_login()
             if 'success' not in login or not login['success']:
                 return login
