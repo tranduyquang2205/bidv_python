@@ -24,7 +24,7 @@ class BIDV:
         self.proxy_list = proxy_list
         if self.proxy_list:
             try:
-                self.proxy_info = self.proxy_list.pop(0)
+                self.proxy_info = random.choice(self.proxy_list)
                 proxy_host, proxy_port, username_proxy, password_proxy = self.proxy_info.split(':')
                 self.proxies = {
                     'http': f'http://{quote(username_proxy)}:{quote(password_proxy)}@{proxy_host}:{proxy_port}',
