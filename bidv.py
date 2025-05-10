@@ -478,13 +478,13 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
     def solve_captcha(self):
         get_captcha = self.get_captcha()
         if get_captcha is None:
-            return {"success": False, "msg": "Failed to get captcha after multiple attempts", "data": None}
+            return { "code": 421,"success": False, "msg": "Failed to get captcha after multiple attempts", "data": None}
         result = self.createTaskCaptcha(get_captcha)
         if 'prediction' in result and result['prediction']:
             self.captcha_value = result['prediction']
             return {"success": True, "key": self.captcha_token, "captcha": self.captcha_value}
         else:
-            return {"success": False, "msg": "Error solve captcha", "data": result}
+            return { "code": 421,"success": False, "msg": "Error solve captcha", "data": result}
 
     def encrypt_data(self, data):
         url = "https://encrypt1.pay2world.vip/api.php?act=encrypt"
