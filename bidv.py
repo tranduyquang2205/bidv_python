@@ -10,9 +10,6 @@ from Cryptodome.Util import Counter
 import time
 from bypass_ssl_v3 import get_legacy_session
 from urllib.parse import quote
-import socket
-import urllib
-import ssl
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -467,7 +464,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         
         for _url in [url_0 ,url_1, url_2, url_3]:
             try:
-                response = session_requests.request("POST", _url, headers=headers, data=payload, timeout=10)
+                response = requests.request("POST", _url, headers=headers, data=payload, timeout=10)
                 if response.status_code in [404, 502]:
                     continue
                 return json.loads(response.text)
@@ -493,7 +490,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         headers = {
         'Content-Type': 'application/json',
         }
-        response = session_requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload)
 
         return json.loads(response.text)
 
@@ -504,7 +501,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         headers = {
         'Content-Type': 'application/json',
         }
-        response = session_requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload)
 
         return json.loads(response.text)
 
@@ -512,6 +509,7 @@ nc+34rTc1lxtyfALUQJBANCy9hPELiv+c36RT7XISDfEX2ZwOo12yexNb545dL8n
         try:
             headers = self.header_null(headers)
             encrypted_data = self.encrypt_data(data)
+            print(self.proxies)
             response = session_requests.post(url, headers=headers, data=json.dumps(encrypted_data), timeout=self.timeout,proxies=self.proxies)
             result = response.json()
             self.auth_token = response.headers.get("Authorization")
